@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block link_head %}
+<link href="{% static 'plugins/datatables.net-bs5/css/dataTables.bootstrap5.min.css' %}" rel="stylesheet"/>
+<link href="{% static 'plugins/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css' %}" rel="stylesheet"/>
+{% endblock %}
+
+{% block script_body %}
+<script src="{% static 'plugins/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'plugins/datatables.net-bs5/js/dataTables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'plugins/datatables.net-responsive/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'plugins/datatables.net-responsive-bs5/js/responsive.bootstrap5.min.js' %}"></script>
+<script src="{% static 'plugins/parsleyjs/dist/parsley.min.js' %}"></script>
+
+{% endblock %}
+
+{% block content_title %}
+Predecir rango de precio
+{% endblock %}
+
+{% block panel_title %}
+Predecir rango de precio
+{% endblock %}
+
+{% block activate_predict %}
+active
+{% endblock %}
+
+{% block panel_content %}
+<h1>Predecir rango de precio</h1>
+<br>
+<div class="col-xl-4">
+    <form class="form-horizontal" data-parsley-validate="true" name="demo-form" action="{% url 'predict' %}"
+          method="POST">
+        {% csrf_token %}
+        <div class="form-group row mb-3">
+            <label class="col-lg-4 col-form-label form-label" for="ram">RAM(Megabytes):</label>
+            <div class="col-lg-8">
+                <input class="form-control" type="text" id="ram" name="ram" placeholder="RAM(Megabytes)"
+                       data-parsley-required="true" data-parsley-type="number"/>
+            </div>
+        </div>
+        <div class="form-group row mb-3">
+            <label class="col-lg-4 col-form-label form-label" for="battery_power">Batería(mAh):</label>
+            <div class="col-lg-8">
+                <input class="form-control" type="text" id="battery_power" name="battery_power"
+                       data-parsley-type="number"
+                       placeholder="Batería(mAh)" data-parsley-required="true"/>
+            </div>
+        </div>
+        <div class="form-group row mb-3">
+            <label class="col-lg-4 col-form-label form-label" for="px_height">Resolución de píxeles en altura:</label>
+            <div class="col-lg-8">
+                <input class="form-control" type="text" id="px_height" name="px_height" data-parsley-type="number"
+                       placeholder="Resolución de píxeles en altura" data-parsley-required="true"/>
+            </div>
+        </div>
+        <div class="form-group row mb-3">
+            <label class="col-lg-4 col-form-label form-label" for="px_width">Resolución de píxeles en anchura:</label>
+            <div class="col-lg-8">
+                <input class="form-control" type="text" id="px_width" name="px_width" data-parsley-type="number"
+                       placeholder="Resolución de píxeles en anchura" data-parsley-required="true"/>
+            </div>
+        </div>
+        <div class="form-group row mb-3">
+            <label class="col-lg-4 col-form-label form-label" for="mobile_wt">Peso(Gramos)</label>
+            <div class="col-lg-8">
+                <input class="form-control" type="text" id="mobile_wt" name="mobile_wt" data-parsley-type="number"
+                       placeholder="Peso(Gramos)" data-parsley-required="true"/>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-lg-4 col-form-label form-label">&nbsp;</label>
+            <div class="col-lg-8">
+                <button type="submit" class="btn btn-primary">Predecir</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+{% if category %}
+<br><br><br>
+<div class="col-xl-4">
+    <h2>Resultado</h2>
+    <p class="lead">El rango de precio del móvil es: <strong>{{ prediction }}({{category}})</strong></p>
+</div>
+{% endif %}
+{% endblock %}

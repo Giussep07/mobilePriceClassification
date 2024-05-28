@@ -1,0 +1,304 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block link_head %}
+<link href="{% static 'plugins/datatables.net-bs5/css/dataTables.bootstrap5.min.css' %}" rel="stylesheet"/>
+<link href="{% static 'plugins/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css' %}" rel="stylesheet"/>
+{% endblock %}
+
+{% block style_head %}
+.verticalText {
+-webkit-transform: rotate(-90deg);
+-moz-transform: rotate(-90deg);
+-ms-transform: rotate(-90deg);
+-o-transform: rotate(-90deg);
+transform: rotate(-90deg);
+filter: progid: DXImageTransform.Microsoft.BasicImage(rotation=3);
+}
+{% endblock %}
+
+{% block script_body %}
+<script src="{% static 'plugins/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'plugins/datatables.net-bs5/js/dataTables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'plugins/datatables.net-responsive/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'plugins/datatables.net-responsive-bs5/js/responsive.bootstrap5.min.js' %}"></script>
+<script src="{% static 'plugins/chart.js/dist/Chart.min.js' %}"></script>
+
+<script>
+    $('#data-table-default').DataTable({
+      responsive: true
+    });
+</script>
+
+<script>
+  Chart.defaults.color = 'rgba(12, 12, 12, 1)';
+  Chart.defaults.font.family = app.font.family;
+  Chart.defaults.font.weight = 500;
+  Chart.defaults.scale.grid.color = 'rgba(12, 12, 12, .15)';
+  Chart.defaults.scale.ticks.backdropColor = 'rgba(255, 127, 14, 0)';
+
+  var randomScalingFactor = function() {
+    return Math.round(Math.random()*100)
+  };
+
+  var ctx2 = document.getElementById('bar-chart').getContext('2d');
+  var barChart = new Chart(ctx2, {
+    type: 'bar',
+    data: {
+      labels: ['Precisión', 'Sensibilidad', 'F1-score'],
+      datasets: [{
+        label: 'SVM',
+        borderWidth: 1,
+        borderColor: 'rgb(31, 119, 180)',
+        backgroundColor: 'rgba(31, 119, 180, .3)',
+        data: [{{ precision }}, {{ recall }}, {{ score }}]
+      }, {
+        label: 'SVM Boost',
+        borderWidth: 1,
+        borderColor: 'rgba(255, 127, 14, .85)',
+        backgroundColor: 'rgba(255, 127, 14, .3)',
+        data: [{{ precision_boost }}, {{ recall_boost }}, {{ score_boost }}]
+      }]
+    }
+  });
+</script>
+{% endblock %}
+
+{% block content_title %}
+SVM
+{% endblock %}
+
+{% block panel_title %}
+SVM
+{% endblock %}
+
+{% block activate_svm %}
+active
+{% endblock %}
+
+{% block panel_content %}
+<h1>Support Vector Machine</h1>
+<br>
+<h2>Diccionario de Datos</h2>
+<div class="table-responsive col-xl-6">
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>Columna</th>
+            <th>Descripción</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for key, value in data_dict.items %}
+        <tr>
+            <td>{{ key }}</td>
+            <td>{{ value }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+<br>
+<h2>Datos</h2>
+<table id="data-table-default" class="table table-striped table-bordered align-middle">
+    <thead>
+    <tr>
+        {% for column in columns %}
+        <th class="text-nowrap">{{ column }}</th>
+        {% endfor %}
+    </tr>
+    </thead>
+    <tbody>
+    {% for row in data %}
+    <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
+        {% for cell in row %}
+        <td>{{ cell }}</td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<br/>
+<h2>Pesos de las Características</h2>
+<div class="table-responsive col-xl-2">
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>Característica</th>
+            <th>Peso</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for key, value in weights.items %}
+        <tr class="{% if forloop.counter|divisibleby:2 %}even-row{% else %}odd-row{% endif %}">
+            <td>{{ key}}</td>
+            <td>{{ value }}%</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+<br>
+<h2>Mejores Características</h2>
+<ul>
+    <li>ram</li>
+    <li>battery_power</li>
+    <li>px_height</li>
+    <li>px_width</li>
+    <li>mobile_wt</li>
+</ul>
+<br>
+<h2>Matriz de Confusión</h2>
+<div class="table-responsive col-xl-6">
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th></th>
+            {% for label in labels %}
+            <th>{{ label }}</th>
+            {% endfor %}
+        </tr>
+        </thead>
+        <tbody>
+        {% for label, row in confusion_matrix_with_labels %}
+        <tr>
+            <th>{{ label }}</th>
+            {% for cell in row %}
+            <td>{{ cell }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+<h3>Conclusiones</h3>
+<ol>
+    <li><strong>Bajo costo(0):</strong></li>
+    <ul>
+        <li>91 instancias fueron correctamente clasificadas como "Bajo costo".</li>
+        <li>1 instancia fue incorrectamente clasificada como "Costo medio".</li>
+    </ul>
+    <li><strong>Costo medio(1):</strong></li>
+    <ul>
+        <li>94 instancias fueron correctamente clasificadas como "Costo medio".</li>
+        <li>1 instancia fue incorrectamente clasificada como "Bajo costo".</li>
+        <li>1 instancia fue incorrectamente clasificada como "Costo alto".</li>
+    </ul>
+    <li><strong>Costo alto(2):</strong></li>
+    <ul>
+        <li>98 instancias fueron correctamente clasificadas como "Costo alto".</li>
+        <li>6 instancias fueron incorrectamente clasificadas como "Costo medio".</li>
+        <li>2 instancias fueron incorrectamente clasificadas como "Muy alto costo".</li>
+    </ul>
+    <li><strong>Muy alto costo(3):</strong></li>
+    <ul>
+        <li>99 instancias fueron correctamente clasificadas como "Muy alto costo".</li>
+        <li> 7 instancias fueron incorrectamente clasificadas como "Costo alto".</li>
+    </ul>
+</ol>
+<br>
+<h2>Métricas</h2>
+<div class="table-responsive col-xl-2">
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>Métrica</th>
+            <th>Puntaje</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>Precisión</td>
+            <td>{{ precision }}%</td>
+        </tr>
+        <tr>
+            <td>Sensibilidad</td>
+            <td>{{ recall }}%</td>
+        </tr>
+        <tr>
+            <td>F1-score</td>
+            <td>{{ score }}%</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<br><br>
+<h1>Support Vector Machine con hiperparámetros</h1>
+<h2>Matriz de Confusión</h2>
+<div class="table-responsive col-xl-6">
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th></th>
+            {% for label in labels %}
+            <th>{{ label }}</th>
+            {% endfor %}
+        </tr>
+        </thead>
+        <tbody>
+        {% for label, row in confusion_matrix_with_labels_boost %}
+        <tr>
+            <th>{{ label }}</th>
+            {% for cell in row %}
+            <td>{{ cell }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+<h3>Conclusiones</h3>
+<ol>
+    <li><strong>Bajo costo(0):</strong></li>
+    <ul>
+        <li>91 instancias fueron correctamente clasificadas como "Bajo costo".</li>
+        <li>1 instancia fue incorrectamente clasificada como "Costo medio".</li>
+    </ul>
+    <li><strong>Costo medio(1):</strong></li>
+    <ul>
+        <li>94 instancias fueron correctamente clasificadas como "Costo medio".</li>
+        <li>1 instancia fue incorrectamente clasificada como "Bajo costo".</li>
+        <li>1 instancia fue incorrectamente clasificada como "Costo alto".</li>
+    </ul>
+    <li><strong>Costo alto(2):</strong></li>
+    <ul>
+        <li>104 instancias fueron correctamente clasificadas como "Costo alto".</li>
+        <li>1 instancias fueron incorrectamente clasificadas como "Costo medio".</li>
+        <li>1 instancias fueron incorrectamente clasificadas como "Muy alto costo".</li>
+    </ul>
+    <li><strong>Muy alto costo(3):</strong></li>
+    <ul>
+        <li>102 instancias fueron correctamente clasificadas como "Muy alto costo".</li>
+        <li>4 instancias fueron incorrectamente clasificadas como "Costo alto".</li>
+    </ul>
+</ol>
+<br>
+<h2>Métricas</h2>
+<div class="table-responsive col-xl-2">
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>Métrica</th>
+            <th>Puntaje</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>Precisión</td>
+            <td>{{ precision_boost }}%</td>
+        </tr>
+        <tr>
+            <td>Sensibilidad</td>
+            <td>{{ recall_boost }}%</td>
+        </tr>
+        <tr>
+            <td>F1-score</td>
+            <td>{{ score_boost }}%</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<br><br><br>
+<h2>Gráfica comparativa de métricas</h2>
+<canvas id="bar-chart"></canvas>
+{% endblock %}

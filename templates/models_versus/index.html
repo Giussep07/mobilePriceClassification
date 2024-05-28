@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block link_head %}
+<link href="{% static 'plugins/datatables.net-bs5/css/dataTables.bootstrap5.min.css' %}" rel="stylesheet"/>
+<link href="{% static 'plugins/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css' %}" rel="stylesheet"/>
+{% endblock %}
+
+{% block style_head %}
+.verticalText {
+-webkit-transform: rotate(-90deg);
+-moz-transform: rotate(-90deg);
+-ms-transform: rotate(-90deg);
+-o-transform: rotate(-90deg);
+transform: rotate(-90deg);
+filter: progid: DXImageTransform.Microsoft.BasicImage(rotation=3);
+}
+{% endblock %}
+
+{% block script_body %}
+<script src="{% static 'plugins/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'plugins/datatables.net-bs5/js/dataTables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'plugins/datatables.net-responsive/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'plugins/datatables.net-responsive-bs5/js/responsive.bootstrap5.min.js' %}"></script>
+<script src="{% static 'plugins/chart.js/dist/Chart.min.js' %}"></script>
+
+<script>
+    $('#data-table-default').DataTable({
+      responsive: true
+    });
+</script>
+
+<script>
+    Chart.defaults.color = 'rgba(12, 12, 12, 1)';
+    Chart.defaults.font.family = app.font.family;
+    Chart.defaults.font.weight = 500;
+    Chart.defaults.scale.grid.color = 'rgba(12, 12, 12, .15)';
+    Chart.defaults.scale.ticks.backdropColor = 'rgba(255, 127, 14, 0)';
+
+    var ctx2 = document.getElementById('svm-vs-nb-normal').getContext('2d');
+    var barChart = new Chart(ctx2, {
+      type: 'bar',
+      data: {
+        labels: ['Precisión', 'Sensibilidad', 'F1-score'],
+        datasets: [{
+          label: 'SVM',
+          borderWidth: 1,
+          borderColor: 'rgb(31, 119, 180)',
+          backgroundColor: 'rgba(31, 119, 180, .3)',
+          data: [{{ svm_normal.precision }}, {{ svm_normal.recall }}, {{ svm_normal.f1 }}]
+        }, {
+          label: 'NB',
+          borderWidth: 1,
+          borderColor: 'rgba(255, 127, 14, .85)',
+          backgroundColor: 'rgba(255, 127, 14, .3)',
+          data: [{{ nb_normal.precision }}, {{ nb_normal.recall }}, {{ nb_normal.f1 }}]
+        }]
+      }
+    });
+
+    var ctx3 = document.getElementById('svm-vs-nb-boost').getContext('2d');
+    var barChart = new Chart(ctx3, {
+      type: 'bar',
+      data: {
+        labels: ['Precisión', 'Sensibilidad', 'F1-score'],
+        datasets: [{
+          label: 'SVM Boost',
+          borderWidth: 1,
+          borderColor: 'rgb(31, 119, 180)',
+          backgroundColor: 'rgba(31, 119, 180, .3)',
+          data: [{{ svm_boost.precision }}, {{ svm_boost.recall }}, {{ svm_boost.f1 }}]
+        }, {
+          label: 'NB Boost',
+          borderWidth: 1,
+          borderColor: 'rgba(255, 127, 14, .85)',
+          backgroundColor: 'rgba(255, 127, 14, .3)',
+          data: [{{ nb_boost.precision }}, {{ nb_boost.recall }}, {{ nb_boost.f1 }}]
+        }]
+      }
+    });
+
+    var ctx4 = document.getElementById('svm-vs-nb-normal-boost').getContext('2d');
+    var radarChart = new Chart(ctx4, {
+      type: 'radar',
+      data: {
+        labels: ['Precisión', 'Sensibilidad', 'F1-score'],
+        datasets: [{
+          label: 'SVM Normal',
+          borderWidth: 2,
+          borderColor: 'rgba(0, 114, 178, 1)',
+          pointBackgroundColor: 'rgba(0, 114, 178, 1)',
+          pointRadius: 2,
+          backgroundColor: 'rgba(0, 114, 178, .2)',
+          data: [{{ svm_normal.precision }}, {{ svm_normal.recall }}, {{ svm_normal.f1 }}]
+        }, {
+          label: 'SVM Boost',
+          borderWidth: 2,
+          borderColor: 'rgba(230, 159, 0, 1)',
+          pointBackgroundColor: 'rgba(230, 159, 0, 1)',
+          pointRadius: 2,
+          backgroundColor: 'rgba(230, 159, 0, .2)',
+          data: [{{ svm_boost.precision }}, {{ svm_boost.recall }}, {{ svm_boost.f1 }}]
+        }, {
+          label: 'NB Normal',
+          borderWidth: 2,
+          borderColor: 'rgba(0, 158, 115, 1)',
+          pointBackgroundColor: 'rgba(0, 158, 115, 1)',
+          pointRadius: 2,
+          backgroundColor: 'rgba(0, 158, 115, .2)',
+          data: [{{ nb_normal.precision }}, {{ nb_normal.recall }}, {{ nb_normal.f1 }}]
+        }, {
+          label: 'NB Boost',
+          borderWidth: 2,
+          borderColor: 'rgba(204, 121, 167, 1)',
+          pointBackgroundColor: 'rgba(204, 121, 167, 1)',
+          pointRadius: 2,
+          backgroundColor: 'rgba(204, 121, 167, .2)',
+          data: [{{ nb_boost.precision }}, {{ nb_boost.recall }}, {{ nb_boost.f1 }}]
+        }
+        ]
+      }
+      });
+</script>
+{% endblock %}
+
+{% block content_title %}
+SVM vs NB
+{% endblock %}
+
+{% block panel_title %}
+SVM vs NB
+{% endblock %}
+
+{% block activate_svm_vs_nb %}
+active
+{% endblock %}
+
+{% block panel_content %}
+<h1>Comparativa Métricas de evaluación</h1>
+<div class="table-responsive col-xl-6">
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>Modelo</th>
+            <th>Configuración</th>
+            <th>Precisión (%)</th>
+            <th>Sensibilidad (%)</th>
+            <th>F1-score (%)</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>SVM</td>
+            <td>Normal</td>
+            <td>{{ svm_normal.precision }}</td>
+            <td>{{ svm_normal.recall }}</td>
+            <td>{{ svm_normal.f1 }}</td>
+        </tr>
+        <tr>
+            <td>SVM</td>
+            <td>Boost</td>
+            <td>{{ svm_boost.precision }}</td>
+            <td>{{ svm_boost.recall }}</td>
+            <td>{{ svm_boost.f1 }}</td>
+        </tr>
+        <tr>
+            <td>Naive Bayes</td>
+            <td>Normal</td>
+            <td>{{ nb_normal.precision }}</td>
+            <td>{{ nb_normal.recall }}</td>
+            <td>{{ nb_normal.f1 }}</td>
+        </tr>
+        <tr>
+            <td>Naive Bayes</td>
+            <td>Normal</td>
+            <td>{{ nb_boost.precision }}</td>
+            <td>{{ nb_boost.recall }}</td>
+            <td>{{ nb_boost.f1 }}</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<br>
+<h2>Mejores Características</h2>
+<ul>
+    <li>ram</li>
+    <li>battery_power</li>
+    <li>px_height</li>
+    <li>px_width</li>
+    <li>mobile_wt</li>
+</ul>
+<br>
+<h2>Métricas SVM vs NB - Normal</h2>
+<canvas id="svm-vs-nb-normal"></canvas>
+<br><br><br>
+<h2>Métricas SVM vs NB - Boost</h2>
+<canvas id="svm-vs-nb-boost"></canvas>
+<br><br><br>
+<h2>Métricas SVM vs NB - Normal y Boost</h2>
+<div class="col-xl-8">
+    <canvas id="svm-vs-nb-normal-boost"></canvas>
+</div>
+<br>
+<h3>Conclusiones</h3>
+<h4>Mejor modelo</h4>
+<div class="col-xl-6">
+    <p>El modelo SVM con hiperparámetros es el mejor modelo evaluado, alcanzando las métricas más altas en precisión, recall y F1-Score. Esto sugiere que este modelo tiene una excelente capacidad para clasificar correctamente las instancias del conjunto de datos.</p>
+</div>
+{% endblock %}
